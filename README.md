@@ -1,125 +1,239 @@
-# Nod
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Pimmawat/Nod/main/assets/icon.png" width="128" height="128" alt="Nod logo">
+</p>
 
-ส่วนขยายสำหรับ **Codex Chat และ Claude Code ใน IDE** ที่ตั้งค่า hooks อัตโนมัติ ส่งเสียงเตือนเมื่อมีคำขออนุมัติหรือคำถามจากเครื่องมือที่รองรับ และอนุมัติคำขอใช้เครื่องมือที่ตั้งไว้หลังหน่วง 3 วินาที
+<h1 align="center">Nod</h1>
 
-ใช้ native hooks ของแต่ละ Agent ไม่ต้องเปิด Agent ใน Terminal และไม่อ่านหน้าจอหรือกดปุ่มผ่าน DOM การแจ้งเตือนระบุว่าเป็น Codex หรือ Claude Code
+<p align="center">
+  <strong>รับการแจ้งเตือนจาก Codex และ Claude Code พร้อมควบคุม Auto Approve ได้จาก IDE</strong>
+</p>
 
-## สิ่งที่ทำได้
+<p align="center">
+  Native hooks · Local only · Multi-IDE · No telemetry
+</p>
 
-| เหตุการณ์ | เสียงและการแจ้งเตือน | Auto Approve |
-| --- | --- | --- |
-| Codex / Claude Code ขออนุมัติใช้เครื่องมือ (`PermissionRequest`) | ได้ เมื่อ Agent ส่ง hook | ได้ สำหรับเครื่องมือที่ตั้งไว้แยกตาม Agent |
-| Codex ถามผ่าน `request_user_input` / `request_user_input_async` | ได้ เมื่อรุ่นและเส้นทางของเครื่องมือนั้นส่ง `PreToolUse` | ผู้ใช้เลือกคำตอบเอง |
-| Claude Code ถามตัวเลือกผ่าน `AskUserQuestion` | ได้ ผ่าน `PreToolUse` | ผู้ใช้เลือกคำตอบเอง |
-| ถามเป็นข้อความธรรมดาในแชท | ยังตรวจจับไม่ได้ | ไม่รองรับ |
+Nod เป็นส่วนขยายสำหรับ VS Code และ IDE ที่รองรับ VSIX ช่วยส่งเสียงและแสดงการแจ้งเตือนเมื่อ Codex หรือ Claude Code ต้องการสิทธิ์ใช้เครื่องมือหรือถามคำถามที่รองรับ โดยเชื่อมต่อผ่าน native hooks ของแต่ละ Agent โดยตรง ไม่อ่านหน้าจอ ไม่กดปุ่มผ่าน DOM และไม่จำเป็นต้องเปิด Agent ใน Terminal
 
-ตั้งแต่รุ่น 0.5.0 VS Code, Antigravity และ IDE ที่รองรับ VSIX ใช้ registry กลางที่ `~/.agent-alert` จึงเปิดหลาย IDE พร้อมกันได้โดยไม่เขียน hook ทับให้เชื่อมต่อได้เพียง IDE ล่าสุด แต่ละเหตุการณ์จะถูกส่งไปยังหน้าต่างที่เปิด workspace ตรงกับ `cwd` ของ Agent และรองรับทั้ง Codex กับ Claude Code พร้อมกัน รุ่น 0.6.0 เปลี่ยนชื่อที่แสดงเป็น **Nod** โดยคง extension ID และ settings `agentAlert.*` เดิมเพื่อให้อัปเกรดต่อเนื่องโดยค่าที่ตั้งไว้ไม่หาย
+## จุดเด่น
 
-การติดตั้งใหม่จะเปิดเสียงและ Auto Approve พร้อมตั้งค่า hooks ให้ Agent ที่พบใน IDE เมื่อเปิดโฟลเดอร์บนเครื่องที่เชื่อถือแล้ว ถ้ากด **Stop Auto Approve** จะจำสถานะหยุดของ workspace นั้นแม้ reload IDE จนกว่าจะสั่ง Arm อีกครั้ง คำขอที่กำลังรอจะถูกยกเลิกเมื่อกด Stop, ปรับการตั้งค่า, เปลี่ยน workspace หรือการเชื่อมต่อจบลง
+- **รองรับ Codex และ Claude Code** — แยกสถานะ การแจ้งเตือน และรายการ Auto Approve ของแต่ละ Agent
+- **ตั้งค่า hooks อัตโนมัติ** — merge เข้ากับ configuration เดิม พร้อมสร้างไฟล์สำรองก่อนเปลี่ยนแปลง
+- **แจ้งเตือนทันที** — ใช้เสียงที่มากับส่วนขยายหรือเลือกไฟล์เสียงของคุณเอง
+- **ใช้งานหลาย IDE พร้อมกัน** — ส่งเหตุการณ์ไปยังหน้าต่างที่เปิด workspace ตรงกับ `cwd` ของ Agent
+- **ทำงานบนเครื่องเท่านั้น** — bridge รับการเชื่อมต่อผ่าน `127.0.0.1` และไม่มี telemetry
+- **ควบคุมได้ตลอดเวลา** — หยุด Auto Approve, Pause ทั้งระบบ หรือยกเลิกคำขอที่กำลังรอได้จาก status bar
 
-ถ้าอัปเกรดจากรุ่นเก่า ส่วนขยายจะรักษาค่าที่ผู้ใช้ตั้งไว้ เช่น `autoApprove.enabled: false` หรือรายการเครื่องมือ `[]` จึงต้องเปิดค่าที่เคยปิดไว้ก่อนหากต้องการใช้ Auto Approve
+## รองรับเหตุการณ์ใดบ้าง
 
-## ติดตั้ง
+| เหตุการณ์ | เสียงและ Notification | Auto Approve |
+| --- | :---: | :---: |
+| Codex / Claude Code ขอใช้เครื่องมือ (`PermissionRequest`) | ✓ | ✓ สำหรับเครื่องมือที่กำหนด |
+| Codex เรียก `request_user_input` / `request_user_input_async` | ✓ เมื่อ Agent ส่ง `PreToolUse` | — |
+| Claude Code เรียก `AskUserQuestion` | ✓ | — |
+| Agent ถามเป็นข้อความธรรมดาในแชท | — | — |
 
-ต้องมี IDE ที่รองรับ VS Code extension API 1.96.2+, Node.js 18+ ใน PATH ของ IDE และส่วนขยาย Agent ที่ต้องการใช้งาน: `openai.chatgpt` สำหรับ Codex หรือ `anthropic.claude-code` สำหรับ Claude Code โดยใช้รุ่นที่รองรับ native hooks ส่วนขยายจะค้นหา path เต็มของ Node เพื่อให้ hook ไม่ต้องพึ่ง PATH ของ Agent
+> [!IMPORTANT]
+> การติดตั้งใหม่จะเปิด Auto Approve ตามค่าเริ่มต้นสำหรับ `Bash`, `exec_command`, `apply_patch` ของ Codex และ `Bash`, `Edit`, `Write` ของ Claude Code หลังหน่วง 3 วินาที รายการนี้ตรวจจาก **ชื่อเครื่องมือ** ไม่ได้วิเคราะห์ข้อความคำสั่งภายใน หากต้องการใช้เฉพาะการแจ้งเตือน ให้ปิด `agentAlert.autoApprove.enabled` ทันทีหลังติดตั้ง
 
-1. ติดตั้ง `agent-alert-0.6.0.vsix` ใน **ทุก IDE ที่ต้องการใช้พร้อมกัน** จาก Extensions → `…` → **Install from VSIX…** Nod จะสั่ง Reload Window ให้อัตโนมัติหนึ่งครั้งเมื่อ IDE โหลดรุ่นใหม่แล้ว หากหน้าติดตั้งยังแสดงปุ่ม Reload ก่อนที่ extension จะเริ่มทำงาน ให้กดปุ่มนั้นหนึ่งครั้ง
-2. เปิดโฟลเดอร์โปรเจกต์บนเครื่องและเชื่อถือ workspace ส่วนขยายจะตั้งค่า hooks ของ Agent ที่ติดตั้งอยู่ พร้อมเริ่ม Auto Approve ตามค่าเริ่มต้น ไม่ต้องกด Setup หรือ Arm เอง
-3. ถ้าเปิด Agent ค้างไว้ ให้เริ่ม session ใหม่เพื่อโหลด hooks สำหรับ **Codex ยังต้อง review/trust hook ใหม่** ตามหน้าจอของ Codex หาก IDE ไม่มีหน้าจอจัดการ hooks ให้ใช้ `/hooks` ใน Codex CLI ที่ใช้ configuration directory เดียวกัน
+## เริ่มต้นใช้งาน
 
-Status bar จะแสดง **Auto armed** เมื่อพร้อมอนุมัติตามรายการ แต่ยังไม่ได้ยืนยันว่า Agent ส่ง hook จริงแล้ว หากแสดง **Setup needed** ให้เปิด **Nod: Show Connection Status** เพื่อดูสาเหตุ เช่นหา Node.js ไม่พบหรือ configuration อ่านไม่ได้
+### สิ่งที่ต้องมี
 
-ตรวจเสียงด้วย **Nod: Test Sound** และลอง **Test Chat Notification** (Codex) หรือ **Test Claude Code Chat Notification** จากนั้นตรวจเหตุการณ์จริงด้วย **Show Connection Status** ซึ่งแสดงสถานะของแต่ละ Agent แยกกัน การทดสอบแจ้งเตือนจำลองไม่ยืนยันว่า hook ของ Agent ทำงานแล้ว
+- VS Code หรือ IDE ที่รองรับ VS Code Extension API `1.96.2` ขึ้นไป
+- Node.js `18` ขึ้นไปใน `PATH` ของ IDE
+- Agent อย่างน้อยหนึ่งตัวที่รองรับ native hooks:
+  - Codex extension: `openai.chatgpt`
+  - Claude Code extension: `anthropic.claude-code`
 
-หากต้องการจัดการ hooks เอง ให้ปิด `agentAlert.setup.automatic` คำสั่ง **Set Up Codex Chat Hooks**, **Set Up Claude Code Chat Hooks** และ **Preview … Hook Configuration** ยังใช้ได้จาก Command Palette
+### ติดตั้งจาก VSIX
 
-### เชื่อม Claude Code
+1. ดาวน์โหลด `agent-alert-0.6.0.vsix`
+2. เปิดหน้า **Extensions** ใน IDE แล้วเลือก `…` → **Install from VSIX…**
+3. เปิดโฟลเดอร์โปรเจกต์บนเครื่องและ Trust workspace
+4. รอให้ Nod ตั้งค่า hooks อัตโนมัติ แล้วเริ่ม Agent session ใหม่
+5. สำหรับ Codex ให้ review/trust hook ที่เพิ่มใหม่ตามหน้าจอของ Codex หรือผ่าน `/hooks`
 
-ส่วนขยายจะ merge hooks ลงใน `~/.claude/settings.json` อัตโนมัติ โดยเก็บ settings, permissions, plugins และ hooks เดิมไว้ พร้อมสำรองไฟล์เดิมก่อนเปลี่ยนแปลง ถ้าใช้ `CLAUDE_CONFIG_DIR` หรือ `agentAlert.claudeHome` จะใช้ directory นั้นแทน เรียก **Nod: Set Up Claude Code Chat Hooks** ได้หากต้องการตั้งค่าเอง
+ติดตั้ง Nod ในทุก IDE ที่ต้องการเปิดใช้งานพร้อมกัน ส่วนขยายจะ reload หน้าต่างหนึ่งครั้งเมื่อพบว่าเป็นการติดตั้งหรืออัปเดตเวอร์ชันใหม่ หาก IDE ยังแสดงปุ่ม **Reload** ให้กดปุ่มนั้นอีกครั้ง
 
-ใช้ **Nod: Preview Claude Code Hook Configuration** เพื่อดู JSON หรือ merge เองได้ การตั้งค่า hooks ไม่เปลี่ยน `disableAllHooks` หรือ permission mode ที่ตั้งไว้ ถ้าปิด hooks ใน Claude Code อยู่ ต้องเปิดก่อน
+### ตรวจสอบว่าพร้อมใช้งาน
 
-หลัง Setup ให้เริ่ม Claude Code session ใหม่ แล้วตรวจ hooks ที่โหลดในเมนู Hooks ของ Claude Code รุ่นที่มีเมนูนี้ หรือ `/hooks` ใน CLI ที่ใช้ configuration เดียวกัน ดู [hooks ในส่วนขยาย VS Code](https://code.claude.com/docs/en/vs-code#use-the-prompt-box)
+กด **Nod** บน status bar แล้วทดสอบตามลำดับนี้:
 
-ทดสอบ choice จริงโดยส่งใน **แชท Claude Code** ว่า: `ใช้ AskUserQuestion ถามฉันว่าจะเลือก TypeScript หรือ JavaScript แล้วรอคำตอบ` เมื่อ Claude เรียกเครื่องมือนี้ ส่วนขยายควรส่งเสียงและแจ้งเตือน จากนั้นตรวจ **Show Connection Status** ว่าได้รับ Claude Code question จริงแล้ว ปุ่ม Test Notification เป็นเพียงการจำลองและไม่เพิ่มสถานะว่าได้รับ hook จริง
+1. **Test sound** — ตรวจสอบเสียงจากระบบ
+2. **Test Codex chat notification** หรือ **Test Claude Code chat notification** — ตรวจสอบ Notification จำลอง
+3. **Connection status** — ตรวจสอบว่าได้รับ hook จริงจาก Agent หรือยัง
 
-### เชื่อม Codex
+Notification จำลองยืนยันเฉพาะการแสดงผลของ Nod ไม่ได้ยืนยันว่า Agent โหลด hook สำเร็จ ต้องเรียกเครื่องมือจริงจาก Agent แล้วตรวจ **Connection status** อีกครั้ง
 
-ส่วนขยายจะรวม hook ลงใน `~/.codex/hooks.json` อัตโนมัติ โดยเก็บ hook เดิมไว้ และสำรองไฟล์เดิมก่อนเปลี่ยนแปลง ถ้าใช้ `CODEX_HOME` หรือ `agentAlert.codexHome` จะใช้ directory นั้นแทน
+## สถานะบน Status Bar
 
-ใช้ `Nod: Preview Codex Hook Configuration` เพื่อดู JSON ก่อน หรือคัดลอกไป merge เองได้ ใน configuration ที่ปิด hooks ต้องเปิด `[features] hooks = true` ด้วย
+| สถานะ | ความหมาย |
+| --- | --- |
+| **Auto armed** | พร้อมอนุมัติเครื่องมือที่อยู่ในรายการ Auto Approve |
+| **Alerts only** | รับเสียงและ Notification แต่ไม่อนุมัติอัตโนมัติ |
+| **Setup needed** | hook หรือ dependency มีปัญหา เปิด **Connection status** เพื่อดูรายละเอียด |
+| **Paused** | หยุดทั้งการแจ้งเตือนและ Auto Approve สำหรับ workspace นี้ |
+| **Disconnected** | local bridge ยังไม่พร้อมหรือเริ่มทำงานไม่สำเร็จ |
 
-Codex กำหนดให้ review/trust **นิยาม hook ที่ตรงกันทุกครั้ง** เมื่อเพิ่มหรือเปลี่ยน hook ส่วนขยายจึงไม่สามารถข้ามขั้นตอนนี้ให้ได้ ดู [เอกสารการ trust hooks ของ OpenAI](https://learn.chatgpt.com/docs/hooks#review-and-trust-hooks)
+## เชื่อมต่อ Agent
 
-ตั้งแต่รุ่น 0.5.0 helper และ endpoint registry อยู่ใน `~/.agent-alert` ซึ่งเป็น path กลางของทุก IDE และไม่ผูกกับโฟลเดอร์เลขรุ่นของ VSIX เมื่ออัปเกรดจากรุ่นเก่า path จะเปลี่ยนครั้งแรกและ Codex จะต้อง review/trust hook ใหม่ หากภายหลังเปลี่ยน path ของ Node, `agentAlert.sharedDataDirectory` หรือ configuration จนคำสั่ง hook เปลี่ยน ก็ต้อง trust ใหม่เช่นกัน
+Nod ตั้งค่า Agent ที่ติดตั้งอยู่ใน IDE ให้อัตโนมัติเมื่อเปิด trusted local workspace หากต้องการจัดการเอง ให้ปิด `agentAlert.setup.automatic` แล้วใช้คำสั่ง Setup หรือ Preview จาก Command Palette
 
-## ควบคุม Auto Approve
+### Claude Code
 
-1. รายการเริ่มต้นของ Codex คือ `Bash`, `exec_command`, `apply_patch` ส่วน Claude Code คือ `Bash`, `Edit`, `Write` แก้ได้ใน `agentAlert.autoApprove.allowedTools` และ `agentAlert.autoApprove.claudeAllowedTools`
-2. เมื่อเกิดคำขอที่ตรงกับรายการ จะเตือนก่อนแล้วส่งผลอนุมัติหลัง 3 วินาที คำถามแบบ choice ยังต้องเลือกคำตอบเอง
-3. กด **Stop Auto Approve** ในการแจ้งเตือนหรือเมนู Nod เพื่อหยุดและยกเลิกคำขอที่รออยู่ สถานะหยุดจะจำไว้สำหรับ workspace นี้หลังเปิด IDE ใหม่
-4. เมื่อต้องการเปิดอีกครั้ง เลือก **Arm Auto Approve in this window** หรือเรียก **Nod: Toggle Auto Approve in This Window**
+Nod merge hooks ลงใน `~/.claude/settings.json` โดยเก็บ settings, permissions, plugins และ hooks เดิมไว้ หากกำหนด `CLAUDE_CONFIG_DIR` หรือ `agentAlert.claudeHome` จะใช้ directory นั้นแทน
 
-ตั้ง `agentAlert.autoApprove.enabled` เป็น `false` เพื่อใช้เฉพาะเสียงและการแจ้งเตือน หรือตั้ง `agentAlert.autoApprove.armOnStartup` เป็น `false` หากต้องการ Arm เองทุกครั้งหลัง reload IDE การ Pause จะหยุดทั้งเสียงและการอนุมัติ และจำสถานะ Pause ของ workspace ไว้ด้วย
+- ตั้งค่าเอง: **Nod: Set Up Claude Code Chat Hooks**
+- ดู JSON ก่อนติดตั้ง: **Nod: Preview Claude Code Hook Configuration**
+- ตรวจ hooks ที่โหลด: เมนู Hooks ของ Claude Code หรือ `/hooks` ใน CLI
+- หลัง Setup: เริ่ม Claude Code session ใหม่
 
-การ Arm หน้าต่างมีผลกับรายการเครื่องมือที่ตั้งไว้ของทั้งสอง Agent รายการ Codex ไม่มีผลต่อ Claude Code ถ้าต้องการ Auto Approve เฉพาะ Claude ให้ตั้งรายการ Codex เป็น `[]`
+Nod ไม่แก้ `disableAllHooks` หรือ permission mode หาก `disableAllHooks` เปิดอยู่ ต้องเปิด hooks ใน Claude Code ก่อน ดู [Claude Code hooks documentation](https://code.claude.com/docs/en/hooks)
 
-`Bash` และ `exec_command` หมายถึงอนุมัติ **ทุกคำสั่ง shell ที่ขอสิทธิ์ผ่านเครื่องมือชื่อนั้น** ไม่ได้กรองข้อความคำสั่ง ส่วน `*` ครอบคลุมทุกชื่อเครื่องมือของ Agent นั้น ยกเว้นเครื่องมือถามคำตอบ เช่น `AskUserQuestion` ที่ต้องให้ผู้ใช้ตอบเอง กฎ/managed policy และ hook อื่นของ Agent ยังมีผล สำหรับ Claude การอนุมัติแผน `ExitPlanMode` เป็นคำขออนุมัติ จึงเข้าข่ายเมื่อระบุชื่อนี้หรือ `*`
-
-| Setting | ค่าเริ่มต้น | ใช้ทำอะไร |
-| --- | --- | --- |
-| `agentAlert.enabled` | `true` | เปิดรับเหตุการณ์ |
-| `agentAlert.setup.automatic` | `true` | ตั้งค่า hooks ของ Agent ที่ติดตั้งอยู่เมื่อเปิด workspace บนเครื่องที่เชื่อถือ |
-| `agentAlert.sound.enabled` | `true` | เปิดเสียง |
-| `agentAlert.sound.file` | `""` | path เต็มของไฟล์เสียงที่เลือก; ว่างคือเสียงที่มากับส่วนขยาย |
-| `agentAlert.notifications.enabled` | `true` | เปิดการแจ้งเตือนใน IDE |
-| `agentAlert.autoApprove.enabled` | `true` | เปิด master setting ของการอนุมัติอัตโนมัติ |
-| `agentAlert.autoApprove.armOnStartup` | `true` | Arm เมื่อเปิดหน้าต่าง ยกเว้น workspace ที่กด Stop ไว้ |
-| `agentAlert.autoApprove.allowedTools` | `["Bash", "exec_command", "apply_patch"]` | ชื่อเครื่องมือ Codex ที่อนุมัติได้ ตรงตัวหรือ `*` |
-| `agentAlert.autoApprove.claudeAllowedTools` | `["Bash", "Edit", "Write"]` | ชื่อเครื่องมือ Claude Code ที่อนุมัติได้ ตรงตัวหรือ `*`; `[]` คือไม่อนุมัติ |
-| `agentAlert.autoApprove.delayMs` | `3000` | หน่วงก่อนอนุมัติ 1–30 วินาที |
-| `agentAlert.sharedDataDirectory` | `""` | directory กลางสำหรับประสานหลาย IDE; ค่าว่างใช้ `~/.agent-alert` และต้องใช้ค่าเดียวกันทุก IDE |
-| `agentAlert.codexHome` | `""` | directory การตั้งค่า Codex แบบกำหนดเอง |
-| `agentAlert.claudeHome` | `""` | directory การตั้งค่า Claude Code แบบกำหนดเอง |
-
-## เปลี่ยนเสียงเป็นไฟล์ของคุณ
-
-1. กด **Nod** บน status bar → **Choose alert sound…** หรือเรียก **Nod: Choose Alert Sound** จาก Command Palette
-2. เลือกไฟล์เสียงบนเครื่อง ส่วนขยายจะบันทึก path และเล่นตัวอย่างให้ฟัง
-3. เสียงที่เลือกจะใช้กับการแจ้งเตือนของทั้ง Codex และ Claude Code ทันที และจำไว้หลังเปิด IDE ใหม่
-
-macOS เลือก WAV, MP3, M4A, AIFF ได้ ส่วน Windows/Linux ใช้ WAV (แนะนำ PCM) เล่นได้สูงสุด 5 วินาทีต่อครั้ง จึงเหมาะกับคลิปเสียงสั้น ๆ ปุ่ม **Test Sound** จะเล่นเสียงที่ตั้งไว้ หากปิด `agentAlert.sound.enabled` ไว้ ต้องเปิดเพื่อให้มีเสียงเมื่อแจ้งเตือน
-
-ใช้ **Nod: Restore Built-in Sound** เพื่อกลับไปใช้เสียงเดิม หรือกำหนด `agentAlert.sound.file` เป็น path เต็มใน Settings ได้ หากย้าย/ลบไฟล์ หรือเครื่องเล่นอ่านไฟล์ไม่ได้ จะใช้เสียงเดิมแทนและบันทึกเหตุผลใน **Show Log** ส่วนขยายอ้างอิงไฟล์ที่เลือกโดยตรง จึงควรเก็บไฟล์ไว้ในตำแหน่งเดิม
-
-## ขอบเขตการรองรับ
-
-- รุ่นนี้รองรับ **workspace บนเครื่องเดียวกับ IDE** ยังไม่รองรับ SSH, containers, WSL หรือ Agent ที่รันบนเครื่องอื่น
-- ใช้กับ VS Code และ IDE ที่รองรับ VSIX เช่น Antigravity ได้ตาม API ของ IDE นั้น แต่ยังไม่ได้ทดสอบหน้าจอจริงครบทุก IDE
-- OpenAI ระบุว่า local function tools ส่วนใหญ่ส่ง `PreToolUse` แต่บางเส้นทางอาจไม่ส่ง จึงต้องยืนยันเหตุการณ์คำถามกับ Codex รุ่นที่ใช้อยู่ การทดสอบแจ้งเตือนจำลองไม่ได้ยืนยันว่า hook จริงทำงานแล้ว
-- Claude ในที่นี้คือ **Claude Code** ที่มี native hooks ไม่ใช่แชทบน claude.ai หรือแชททั่วไปในแอป Claude
-- ใช้ hooks ระดับผู้ใช้ จึงรับเหตุการณ์จาก Claude Code CLI ที่ใช้ configuration เดียวกันและทำงานใน workspace ที่เปิดอยู่ด้วย
-- Claude Code บาง prompt เช่นการขอ network ของ sandbox ไม่ส่ง `PermissionRequest` รุ่นนี้ยังไม่รับ `Notification` จึงไม่ครอบคลุม prompt เหล่านั้น ดู [ข้อจำกัด PermissionRequest](https://code.claude.com/docs/en/hooks#permissionrequest)
-- เปิด VS Code และ Antigravity พร้อมกันได้ แม้ใช้ configuration ของ Agent ชุดเดียวกัน โดยทุก IDE ต้องติดตั้งรุ่น 0.5.0+ และใช้ `agentAlert.sharedDataDirectory` เดียวกัน (ค่าเริ่มต้นตรงกันอยู่แล้ว)
-- หากเปิดโปรเจกต์เดียวกันหลายหน้าต่าง เหตุการณ์คำถามจะกระจายไปยังหน้าต่างที่ตรงกัน ส่วนคำขออนุมัติจะหยุดทันทีเมื่อหน้าต่างหนึ่งอนุมัติได้ จึงอาจเห็น notification ซ้ำในกรณีที่หน้าต่างแรกตั้งเป็น Alerts only
-- ถ้า IDE ปิดอยู่หรือไม่มี workspace ตรงกัน hook จะออกโดยไม่ตัดสินใจ และ Agent ใช้ขั้นตอนอนุมัติปกติ
-- คำขอ Auto Approve จะรอใน hook ก่อนแสดง prompt ปกติของ Agent; ถ้ากด Stop จะคืนให้ Agent ถามตามปกติ
-
-เสียงเล่นบนเครื่องผู้ใช้: macOS ใช้ `afplay`, Windows ใช้ PowerShell `SoundPlayer`, Linux ใช้ `paplay` หรือ `aplay` หากไม่ดัง ให้ตรวจ `Nod: Show Log` และอุปกรณ์เสียง
-
-## วิธีทำงาน
+ทดสอบคำถามจริงด้วย prompt ตัวอย่าง:
 
 ```text
-Codex / Claude Code Chat → Native hook → Node helper → Local Nod
-                                                        ├─ เล่นเสียง / แจ้งเตือน
-                                                        └─ คืน allow ตามรายการของ Agent นั้น
+ใช้ AskUserQuestion ถามฉันว่าจะเลือก TypeScript หรือ JavaScript แล้วรอคำตอบ
 ```
 
-Helper ส่งเฉพาะชื่อ Agent ชนิดเหตุการณ์ ชื่อเครื่องมือ session/request ID และ cwd ไปยัง `127.0.0.1` พร้อม token ต่อหน้าต่าง ไม่ส่ง tool arguments หรือเนื้อหาบทสนทนา ไฟล์ connection บน POSIX อ่านได้เฉพาะผู้ใช้ มีอายุ 5 นาทีและ refresh ทุก 15 วินาทีเพื่อทนต่อ sleep/การสะดุดชั่วคราว endpoint ที่ตายจะถูกข้ามไปยัง IDE ที่ตรงกันตัวถัดไป และไฟล์เก่าจะถูกเก็บกวาดอัตโนมัติ ไม่มี telemetry ตัวส่ง Claude จะไม่ส่งคำขอไปยังส่วนขยายรุ่นเก่าที่รองรับเพียง Codex
+### Codex
 
-ใช้ [PermissionRequest](https://learn.chatgpt.com/docs/hooks#permissionrequest) สำหรับคำขออนุมัติ และ [PreToolUse / tool coverage](https://learn.chatgpt.com/docs/hooks#tool-coverage) สำหรับคำถามที่รองรับ ส่วนขยายไม่จำเป็นต้องเข้าถึง webview ของ Codex
+Nod merge hook ลงใน `~/.codex/hooks.json` โดยเก็บ hooks เดิมไว้ หากกำหนด `CODEX_HOME` หรือ `agentAlert.codexHome` จะใช้ directory นั้นแทน
 
-Claude Code ใช้ [PermissionRequest](https://code.claude.com/docs/en/hooks#permissionrequest) และ [PreToolUse](https://code.claude.com/docs/en/hooks#pretooluse) โดย matcher คำถามคือ `^AskUserQuestion$` ตอบกลับด้วย native hook decision เฉพาะคำขออนุมัติใช้เครื่องมือ
+- ตั้งค่าเอง: **Nod: Set Up Codex Chat Hooks**
+- ดู JSON ก่อนติดตั้ง: **Nod: Preview Codex Hook Configuration**
+- ตรวจและ Trust hooks: ใช้หน้าจอของ Codex หรือ `/hooks` ใน Codex CLI
+
+ถ้าปิด hooks ใน Codex configuration ต้องเปิดฟีเจอร์ก่อน:
+
+```toml
+[features]
+hooks = true
+```
+
+Codex กำหนดให้ผู้ใช้ review/trust นิยาม hook ที่เพิ่มหรือเปลี่ยน Nod ไม่สามารถข้ามขั้นตอนนี้ได้ ดู [Codex hooks documentation](https://learn.chatgpt.com/docs/hooks)
+
+## Auto Approve
+
+เมื่อ Agent ส่ง `PermissionRequest` ที่ชื่อเครื่องมือตรงกับรายการ Nod จะแจ้งเตือน รอตามค่า `agentAlert.autoApprove.delayMs` แล้วส่งผลอนุมัติกลับไป กฎ sandbox, managed policy, deny rule และ hooks อื่นของ Agent ยังมีผลตามปกติ
+
+### ควบคุมจาก Nod
+
+- **Stop Auto Approve** — ยกเลิกคำขอที่รออยู่และจำสถานะหยุดของ workspace หลัง reload
+- **Arm Auto Approve in this window** — เปิด Auto Approve อีกครั้งสำหรับหน้าต่างปัจจุบัน
+- **Pause Nod** — หยุดทั้ง Notification, เสียง และ Auto Approve
+- `agentAlert.autoApprove.armOnStartup: false` — บังคับให้ Arm เองทุกครั้งหลังเปิด IDE
+- `agentAlert.autoApprove.enabled: false` — ใช้ Nod สำหรับเสียงและ Notification เท่านั้น
+
+> [!WARNING]
+> `Bash` และ `exec_command` ครอบคลุมคำสั่ง shell ที่ Agent ขอสิทธิ์ผ่านเครื่องมือนั้น โดย Nod ไม่กรองข้อความคำสั่ง ส่วน `*` ครอบคลุมทุกชื่อเครื่องมือที่เป็น permission request ควรใช้เฉพาะใน workspace และสภาพแวดล้อมที่คุณเชื่อถือ
+
+รายการของ Codex และ Claude Code แยกจากกัน หากต้องการ Auto Approve เฉพาะ Agent ตัวเดียว ให้ตั้งรายการของอีกตัวเป็น `[]` คำถาม เช่น `AskUserQuestion` และ `request_user_input` จะไม่ถูกตอบอัตโนมัติ แม้ตั้งรายการเป็น `*`
+
+## คำสั่งหลัก
+
+เปิด Command Palette แล้วพิมพ์ `Nod:` หรือกด **Nod** บน status bar
+
+| คำสั่ง | ใช้ทำอะไร |
+| --- | --- |
+| **Open Controls** | เปิดเมนูควบคุมทั้งหมด |
+| **Set Up Codex Chat Hooks** | merge hooks ลงใน Codex configuration |
+| **Set Up Claude Code Chat Hooks** | merge hooks ลงใน Claude Code configuration |
+| **Preview … Hook Configuration** | ดู JSON ที่ Nod จะติดตั้งโดยยังไม่แก้ไฟล์จริง |
+| **Toggle Auto Approve in This Window** | Arm หรือ Stop Auto Approve |
+| **Pause** | หยุดหรือเริ่ม Nod สำหรับ workspace นี้ |
+| **Choose Alert Sound** | เลือกไฟล์เสียงบนเครื่อง |
+| **Test Sound / Test … Notification** | ทดสอบเสียงและ Notification จำลอง |
+| **Show Connection Status** | แสดง Agent, hook, workspace และสถานะการเชื่อมต่อ |
+| **Show Log** | เปิด Output Channel ของ Nod |
+
+## การตั้งค่า
+
+| Setting | ค่าเริ่มต้น | รายละเอียด |
+| --- | --- | --- |
+| `agentAlert.enabled` | `true` | เปิดรับเหตุการณ์จาก Agent |
+| `agentAlert.setup.automatic` | `true` | ตั้งค่า hooks อัตโนมัติใน trusted local workspace |
+| `agentAlert.sound.enabled` | `true` | เปิดเสียงแจ้งเตือน |
+| `agentAlert.sound.file` | `""` | absolute path ของเสียงที่เลือก; ค่าว่างใช้เสียง built-in |
+| `agentAlert.notifications.enabled` | `true` | แสดง IDE Notification |
+| `agentAlert.autoApprove.enabled` | `true` | เปิดระบบ Auto Approve |
+| `agentAlert.autoApprove.armOnStartup` | `true` | Arm เมื่อเปิดหน้าต่าง ยกเว้น workspace ที่กด Stop ไว้ |
+| `agentAlert.autoApprove.allowedTools` | `["Bash", "exec_command", "apply_patch"]` | รายการเครื่องมือ Codex ที่อนุมัติได้ |
+| `agentAlert.autoApprove.claudeAllowedTools` | `["Bash", "Edit", "Write"]` | รายการเครื่องมือ Claude Code ที่อนุมัติได้ |
+| `agentAlert.autoApprove.delayMs` | `3000` | เวลารอก่อนอนุมัติ ตั้งได้ 1–30 วินาที |
+| `agentAlert.sharedDataDirectory` | `""` | directory กลางสำหรับหลาย IDE; ค่าว่างใช้ `~/.agent-alert` |
+| `agentAlert.codexHome` | `""` | Codex configuration directory แบบกำหนดเอง |
+| `agentAlert.claudeHome` | `""` | Claude Code configuration directory แบบกำหนดเอง |
+
+ชื่อเครื่องมือต้องตรงตัว หรือใช้ `*` สำหรับทุกเครื่องมือของ Agent นั้น ค่า `[]` หมายถึงไม่อนุมัติเครื่องมือใดเลย
+
+## เสียงแจ้งเตือน
+
+เลือก **Nod: Choose Alert Sound** แล้วเลือกไฟล์บนเครื่อง Nod จะบันทึก path และเล่นตัวอย่างทันที
+
+| ระบบปฏิบัติการ | รูปแบบที่รองรับ | Player |
+| --- | --- | --- |
+| macOS | WAV, MP3, M4A, AIFF | `afplay` |
+| Windows | WAV | PowerShell `SoundPlayer` |
+| Linux | WAV | `paplay` หรือ `aplay` |
+
+เสียงเล่นได้สูงสุด 5 วินาทีต่อครั้ง จึงเหมาะกับคลิปสั้น หากไฟล์ถูกย้าย ลบ หรือเปิดไม่ได้ Nod จะย้อนกลับไปใช้เสียง built-in และบันทึกเหตุผลใน **Show Log** ใช้ **Restore Built-in Sound** เมื่อต้องการล้างเสียงที่เลือก
+
+## ความเป็นส่วนตัวและความปลอดภัย
+
+```text
+Codex / Claude Code
+        │ native hook
+        ▼
+  Node.js helper
+        │ authenticated localhost request
+        ▼
+   Nod in the IDE
+        ├── Sound / Notification
+        └── Optional allow decision
+```
+
+- Helper ส่งเฉพาะชื่อ Agent, ชนิดเหตุการณ์, ชื่อเครื่องมือ, session/request ID และ `cwd`
+- ไม่ส่ง tool arguments, คำสั่ง shell, transcript หรือเนื้อหาบทสนทนาไปยัง IDE
+- bridge รับเฉพาะ `127.0.0.1` และใช้ token แยกต่อหน้าต่าง
+- ไฟล์ connection บน POSIX ใช้ permission `0600` และ directory ใช้ `0700`
+- endpoint refresh ทุก 15 วินาที มีอายุไม่เกิน 5 นาที และไฟล์เก่าถูกเก็บกวาดอัตโนมัติ
+- ไม่มี telemetry และไม่มีการส่งข้อมูลออกสู่อินเทอร์เน็ตโดย Nod
+- ถ้า IDE ปิดอยู่ ไม่มี workspace ที่ตรงกัน หรือ Nod ไม่พร้อม Helper จะไม่ตัดสินใจและปล่อยให้ Agent ใช้ขั้นตอน permission ตามปกติ
+
+สำหรับ Codex ใช้ [`PermissionRequest`](https://learn.chatgpt.com/docs/hooks#permissionrequest) และ [`PreToolUse`](https://learn.chatgpt.com/docs/hooks#pretooluse) สำหรับ Claude Code ใช้ [`PermissionRequest`](https://code.claude.com/docs/en/hooks#permissionrequest) และ [`PreToolUse`](https://code.claude.com/docs/en/hooks#pretooluse)
+
+## การใช้งานหลาย IDE
+
+ตั้งแต่รุ่น `0.5.0` เป็นต้นไป Nod ใช้ registry กลางที่ `~/.agent-alert` จึงเปิด VS Code, Antigravity หรือ IDE ที่รองรับ VSIX พร้อมกันได้ แต่ละ IDE ต้องติดตั้ง Nod รุ่น `0.5.0` ขึ้นไปและใช้ `agentAlert.sharedDataDirectory` เดียวกัน
+
+- เหตุการณ์จะถูกส่งไปยังหน้าต่างที่มี workspace ตรงกับ `cwd` มากที่สุด
+- ถ้าเปิดโปรเจกต์เดียวกันหลายหน้าต่าง คำถามอาจแสดง Notification มากกว่าหนึ่งหน้าต่าง
+- สำหรับ permission request ระบบจะหยุดเมื่อหน้าต่างหนึ่งส่งผลอนุมัติได้
+- รุ่น `0.6.0` เปลี่ยน display name เป็น **Nod** แต่คง extension ID และ settings `agentAlert.*` เพื่อรักษาค่าจากรุ่นก่อน
+
+## ข้อจำกัด
+
+- รองรับเฉพาะ workspace และ Agent ที่ทำงานบนเครื่องเดียวกับ IDE
+- ยังไม่รองรับ SSH, Dev Containers, WSL หรือ Agent ที่อยู่คนละเครื่อง
+- Claude Code บาง prompt เช่น network request ของ sandbox ไม่ส่ง `PermissionRequest` และ Nod ยังไม่ได้รับเหตุการณ์ `Notification` ประเภทนั้น
+- Codex บางเส้นทางอาจไม่ส่ง `PreToolUse` สำหรับคำถาม ต้องทดสอบกับ Codex เวอร์ชันและโหมดที่ใช้งานจริง
+- Claude ในเอกสารนี้หมายถึง **Claude Code** ไม่ใช่ claude.ai หรือแอป Claude ทั่วไป
+- hooks ระดับผู้ใช้ของ Claude Code อาจรับเหตุการณ์จาก CLI ที่ใช้ configuration เดียวกัน เมื่อ `cwd` อยู่ใน workspace ที่ Nod เปิดอยู่
+- IDE ที่รองรับ VSIX อาจมีพฤติกรรม UI ต่างจาก VS Code และยังไม่ได้ทดสอบครบทุกผลิตภัณฑ์
+
+## แก้ปัญหาเบื้องต้น
+
+| อาการ | วิธีตรวจสอบ |
+| --- | --- |
+| Status แสดง **Setup needed** | เปิด **Nod: Show Connection Status** และ **Nod: Show Log** |
+| หา Node.js ไม่พบ | ติดตั้ง Node.js 18+ แล้วปิดและเปิด IDE ใหม่เพื่อให้รับ `PATH` ล่าสุด |
+| Test Notification ทำงาน แต่เหตุการณ์จริงไม่มา | เริ่ม Agent session ใหม่ แล้วตรวจ hooks/trust ผ่าน `/hooks` |
+| Codex ไม่โหลด hook | ตรวจว่า `[features] hooks = true` และ trust นิยาม hook แล้ว |
+| Claude Code ไม่โหลด hook | ตรวจ `disableAllHooks`, configuration directory และเริ่ม session ใหม่ |
+| ไม่มีเสียงบน Linux | ติดตั้ง `paplay` หรือ `aplay` และตรวจ audio output |
+| เสียงที่เลือกเล่นไม่ได้ | ใช้ไฟล์ที่รองรับหรือเลือก **Restore Built-in Sound** |
+| ใช้งานผ่าน SSH / Container / WSL | รุ่นนี้ยังไม่รองรับ remote workspace |
 
 ## พัฒนาและทดสอบ
 
@@ -129,10 +243,19 @@ npm test
 npm run package
 ```
 
-กด **F5** เพื่อเปิด Extension Development Host การเปิด workspace ที่เชื่อถือจะตั้งค่า hooks อัตโนมัติด้วย หากต้องการแยกจาก configuration ที่ใช้งานจริง ให้ปิด `agentAlert.setup.automatic` หรือตั้ง `agentAlert.codexHome` และ `agentAlert.claudeHome` ไปยัง directory สำหรับพัฒนา
+กด **F5** เพื่อเปิด Extension Development Host ระหว่างพัฒนา ควรปิด `agentAlert.setup.automatic` หรือกำหนด `agentAlert.codexHome` และ `agentAlert.claudeHome` ไปยัง directory ทดสอบ เพื่อไม่ให้แก้ configuration ที่ใช้งานจริง
 
-การทดสอบอัตโนมัติใช้ fixture และ localhost ไม่เล่นเสียงหรือเปลี่ยน configuration ของ Agent จริง ครอบคลุมการตั้งค่าเมื่อเปิดใช้ครั้งแรก, การติดตั้ง Agent ภายหลัง, workspace trust, Node ที่หาไม่พบ, configuration เสีย, การจำ Stop หลัง reload, hook subprocess ของทั้งสอง Agent, การแยกรายการอนุมัติ, การเลือก workspace, token, timeout, การ merge configuration และเสียงแบบจำลอง ยังต้องยืนยันการทำงานกับหน้าจอ Agent จริงบนเครื่องที่นำไปติดตั้ง
+Automated tests ใช้ fixture และ localhost ไม่เล่นเสียงหรือแก้ Agent configuration จริง โดยครอบคลุม hook subprocess, authentication, routing หลาย IDE, workspace trust, timeout, configuration merge, Auto Approve cancellation และ sound player อย่างไรก็ตามควรทดสอบกับหน้าจอและ Agent เวอร์ชันจริงก่อน release
 
 ## ถอนการเชื่อมต่อ
 
-Pause/Disable ส่วนขยายเพื่อหยุดการทำงาน แล้วลบเฉพาะ command hook ที่มี `--agent-alert-codex` ออกจาก Codex `hooks.json` หรือ `--agent-alert-claude` ออกจาก Claude Code `settings.json` เก็บ settings และ hooks ของเครื่องมืออื่นไว้ หากยังเปิดส่วนขยายอยู่ ให้ปิด `agentAlert.setup.automatic` ด้วยเพื่อไม่ให้เพิ่ม hooks กลับ เมื่อไม่ได้เปิดส่วนขยาย helper จะไม่ออกผลอนุมัติ
+1. ปิด `agentAlert.setup.automatic`
+2. Pause หรือ Disable Nod
+3. ลบเฉพาะ command hook ที่มี `--agent-alert-codex` ออกจาก Codex `hooks.json`
+4. ลบเฉพาะ command hook ที่มี `--agent-alert-claude` ออกจาก Claude Code `settings.json`
+
+อย่าลบ settings หรือ hooks ของเครื่องมืออื่น เมื่อ Nod ไม่ได้เปิดอยู่ Helper จะไม่ส่งผลอนุมัติ
+
+## License
+
+เผยแพร่ภายใต้ [MIT License](https://github.com/Pimmawat/Nod/blob/main/LICENSE)
