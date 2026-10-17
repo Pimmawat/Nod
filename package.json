@@ -1,0 +1,71 @@
+{
+  "name": "agent-alert",
+  "displayName": "Nod",
+  "description": "Reliable hook alerts and configurable automatic tool approval for Codex and Claude Code.",
+  "version": "0.6.0",
+  "icon": "assets/icon.png",
+  "publisher": "local-dev",
+  "license": "MIT",
+  "engines": { "vscode": "^1.96.2" },
+  "categories": ["Other"],
+  "keywords": ["codex", "claude", "agent", "chat", "notification", "approval"],
+  "main": "./out/src/extension.js",
+  "extensionKind": ["ui"],
+  "activationEvents": ["onStartupFinished"],
+  "capabilities": {
+    "untrustedWorkspaces": { "supported": false, "description": "Nod connects to local Codex and Claude Code hooks and can approve configured tool requests." },
+    "virtualWorkspaces": false
+  },
+  "scripts": {
+    "compile": "node scripts/clean.cjs && tsc -p .",
+    "watch": "tsc -watch -p .",
+    "test": "npm run compile && node --test out/test/*.test.js",
+    "package": "vsce package --no-dependencies --allow-missing-repository",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "1.93.0",
+    "@vscode/vsce": "^3.0.0",
+    "typescript": "~5.9.3"
+  },
+  "contributes": {
+    "commands": [
+      { "command": "agentAlert.menu", "title": "Nod: Open Controls" },
+      { "command": "agentAlert.setupCodex", "title": "Nod: Set Up Codex Chat Hooks" },
+      { "command": "agentAlert.setupClaude", "title": "Nod: Set Up Claude Code Chat Hooks" },
+      { "command": "agentAlert.previewHooks", "title": "Nod: Preview Codex Hook Configuration" },
+      { "command": "agentAlert.previewClaudeHooks", "title": "Nod: Preview Claude Code Hook Configuration" },
+      { "command": "agentAlert.toggleAutoApprove", "title": "Nod: Toggle Auto Approve in This Window" },
+      { "command": "agentAlert.pause", "title": "Nod: Pause Alerts and Auto Approve" },
+      { "command": "agentAlert.testSound", "title": "Nod: Test Sound" },
+      { "command": "agentAlert.chooseSound", "title": "Nod: Choose Alert Sound" },
+      { "command": "agentAlert.resetSound", "title": "Nod: Restore Built-in Sound" },
+      { "command": "agentAlert.testNotification", "title": "Nod: Test Chat Notification" },
+      { "command": "agentAlert.testClaudeNotification", "title": "Nod: Test Claude Code Chat Notification" },
+      { "command": "agentAlert.showLog", "title": "Nod: Show Log" },
+      { "command": "agentAlert.openSettings", "title": "Nod: Open Settings" },
+      { "command": "agentAlert.openCodex", "title": "Nod: Open Codex Chat" },
+      { "command": "agentAlert.openClaude", "title": "Nod: Open Claude Code Chat" },
+      { "command": "agentAlert.diagnostics", "title": "Nod: Show Connection Status" }
+    ],
+    "configuration": {
+      "title": "Nod",
+      "properties": {
+        "agentAlert.enabled": { "type": "boolean", "default": true, "scope": "application", "description": "Receive native Codex and Claude Code hook events for local folders open in this window." },
+        "agentAlert.setup.automatic": { "type": "boolean", "default": true, "scope": "application", "description": "Automatically configure hooks for installed Codex and Claude Code extensions when a trusted local folder is open. Existing settings and hooks are preserved and backed up. Codex hook trust still requires your review." },
+        "agentAlert.sound.enabled": { "type": "boolean", "default": true, "scope": "application", "description": "Play a local sound when Codex or Claude Code requests permission or asks a supported question." },
+        "agentAlert.sound.file": { "type": "string", "default": "", "scope": "application", "description": "Absolute path to your alert sound. Empty uses the built-in sound. Use Choose Alert Sound to browse and preview. macOS supports WAV, MP3, M4A and AIFF; Windows and Linux use WAV (PCM recommended). Playback stops after 5 seconds. If the file is missing or cannot be decoded, alerts fall back to the built-in sound." },
+        "agentAlert.notifications.enabled": { "type": "boolean", "default": true, "scope": "application", "description": "Show IDE notifications for Codex and Claude Code hook events." },
+        "agentAlert.autoApprove.enabled": { "type": "boolean", "default": true, "scope": "application", "description": "Automatically approve configured tools after the delay. Enabled by default. Turn off for alerts only. Explicit settings from earlier versions are preserved." },
+        "agentAlert.autoApprove.armOnStartup": { "type": "boolean", "default": true, "scope": "application", "description": "Start Auto Approve automatically in trusted local workspaces. Stop Auto Approve remains stopped in that workspace after reload until you arm it again. Turn this off to require manual arming after every reload." },
+        "agentAlert.autoApprove.allowedTools": { "type": "array", "items": { "type": "string", "minLength": 1 }, "default": ["Bash", "exec_command", "apply_patch"], "scope": "application", "description": "Exact Codex tool names eligible for automatic approval, or * for all tools. Bash and exec_command cover every shell command requesting approval through those tools. Questions are never answered automatically." },
+        "agentAlert.autoApprove.claudeAllowedTools": { "type": "array", "items": { "type": "string", "minLength": 1 }, "default": ["Bash", "Edit", "Write"], "scope": "application", "description": "Exact Claude Code tool names eligible for automatic approval, or * for all tools. Empty disables Claude auto approval. Bash covers every shell command requesting approval. AskUserQuestion is never approved or answered automatically." },
+        "agentAlert.autoApprove.delayMs": { "type": "number", "default": 3000, "minimum": 1000, "maximum": 30000, "scope": "application", "description": "Wait after notifying before approving a tool request. Stop Auto Approve cancels pending decisions." },
+        "agentAlert.sharedDataDirectory": { "type": "string", "default": "", "scope": "application", "description": "Optional absolute directory used to coordinate all local VS Code-compatible IDEs. Empty uses ~/.agent-alert. Use the same value in every IDE and reload after changing it." },
+        "agentAlert.codexHome": { "type": "string", "default": "", "scope": "application", "description": "Optional absolute Codex configuration directory. Empty uses CODEX_HOME, then ~/.codex. When automatic setup is off, run Set Up Codex Chat Hooks after changing this." },
+        "agentAlert.claudeHome": { "type": "string", "default": "", "scope": "application", "description": "Optional absolute Claude Code configuration directory. Empty uses CLAUDE_CONFIG_DIR, then ~/.claude. Setup merges hooks into settings.json. When automatic setup is off, run Set Up Claude Code Chat Hooks after changing this." }
+      }
+    }
+  }
+}

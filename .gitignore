@@ -1,0 +1,28 @@
+# Dependencies and package-manager cache
+node_modules/
+.npm-cache/
+
+# Compiled output and test artifacts
+out/
+coverage/
+.vscode-test/
+*.tsbuildinfo
+
+# Packaged VS Code extensions
+*.vsix
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# OS metadata
+.DS_Store
+Thumbs.db
