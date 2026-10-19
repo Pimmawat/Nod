@@ -100,7 +100,3 @@ Press **F5** to launch the Extension Development Host. Disable `agentAlert.setup
 ## Uninstall
 
 Disable `agentAlert.setup.automatic`, then remove only the hooks containing `--agent-alert-codex` from Codex `hooks.json` and `--agent-alert-claude` from Claude Code `settings.json`.
-
-## License
-
-[MIT](https://github.com/Pimmawat/Nod/blob/main/LICENSE)
