@@ -30,7 +30,7 @@ Nod is a VS Code (and VSIX-compatible IDE) extension that plays a sound and show
 
 ## Installation
 
-1. In **Extensions**, choose `…` → **Install from VSIX…** and select `agent-alert-0.6.0.vsix`.
+1. In **Extensions**, choose `…` → **Install from VSIX…** and select `agent-alert-0.7.0.vsix`.
 2. Open a local project folder and trust the workspace.
 3. Nod sets up hooks automatically. Start a new agent session.
 4. For Codex, review and trust the new hook in Codex or via `/hooks`.
