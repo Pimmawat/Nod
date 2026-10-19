@@ -4,8 +4,7 @@
   "description": "Reliable hook alerts and configurable automatic tool approval for Codex and Claude Code.",
   "version": "0.6.0",
   "icon": "assets/icon.png",
-  "publisher": "local-dev",
-  "license": "MIT",
+  "publisher": "Pimmawat",
   "engines": { "vscode": "^1.96.2" },
   "categories": ["Other"],
   "keywords": ["codex", "claude", "agent", "chat", "notification", "approval"],
@@ -20,7 +19,7 @@
     "compile": "node scripts/clean.cjs && tsc -p .",
     "watch": "tsc -watch -p .",
     "test": "npm run compile && node --test out/test/*.test.js",
-    "package": "vsce package --no-dependencies --allow-missing-repository",
+    "package": "vsce package --no-dependencies --allow-missing-repository --skip-license",
     "vscode:prepublish": "npm run compile"
   },
   "devDependencies": {

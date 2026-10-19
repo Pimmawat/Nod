@@ -401,7 +401,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   register('testNotification', () => testNotification('codex'));
   register('testClaudeNotification', () => testNotification('claude'));
   register('showLog', () => output.show());
-  register('openSettings', () => vscode.commands.executeCommand('workbench.action.openSettings', '@ext:local-dev.agent-alert'));
+  register('openSettings', () => vscode.commands.executeCommand('workbench.action.openSettings', '@ext:Pimmawat.agent-alert'));
   register('diagnostics', () => {
     log(`IDE: ${vscode.env.appName} ${vscode.version}`);
     for (const provider of ['codex', 'claude'] as const) {
